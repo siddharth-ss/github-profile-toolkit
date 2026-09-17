@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "github-profile-toolkit"
+version = "0.1.0"
+description = "A developer toolkit for creating, validating, and maintaining professional GitHub profiles and profile README files."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Siddharth S S" }
+]
+dependencies = []
+
+[project.scripts]
+github-profile-toolkit = "github_profile_toolkit.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
