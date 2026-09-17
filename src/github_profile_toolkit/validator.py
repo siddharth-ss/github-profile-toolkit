@@ -54,7 +54,10 @@ def validate_readme(path: str | Path) -> dict:
     headings = extract_headings(content)
     sections = check_required_sections(headings)
 
-    warnings = []
+    quality = check_readme_quality(content, headings)
+
+    warnings = quality["warnings"].copy()
+    errors = quality["errors"].copy()
 
     if not headings:
         warnings.append("No Markdown headings were found.")
@@ -75,7 +78,7 @@ def validate_readme(path: str | Path) -> dict:
         "headings": headings,
         "sections": sections,
         "warnings": warnings,
-        "errors": [],
+        "errors": errors,
     }
 import re
 from urllib.parse import urlparse
@@ -112,6 +115,50 @@ def validate_links(content: str) -> dict:
     return {
         "total": len(markdown_links),
         "valid": len(valid_links),
+        "warnings": warnings,
+        "errors": errors,
+    }
+def check_readme_quality(content: str, headings: list[str]) -> dict:
+    """Check basic Markdown README quality."""
+    warnings = []
+    errors = []
+
+    if not content.strip():
+        errors.append("README is empty.")
+        return {
+            "warnings": warnings,
+            "errors": errors,
+        }
+
+    if headings:
+        normalized_headings = [
+            heading.strip().lower()
+            for heading in headings
+        ]
+
+        duplicates = {
+            heading
+            for heading in normalized_headings
+            if normalized_headings.count(heading) > 1
+        }
+
+        for heading in sorted(duplicates):
+            warnings.append(
+                f"Duplicate heading: {heading}"
+            )
+
+    empty_headings = re.findall(
+        r"^#{1,6}\s*$",
+        content,
+        re.MULTILINE,
+    )
+
+    if empty_headings:
+        warnings.append(
+            "Empty Markdown heading found."
+        )
+
+    return {
         "warnings": warnings,
         "errors": errors,
     }

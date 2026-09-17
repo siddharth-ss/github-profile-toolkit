@@ -3,8 +3,10 @@ from pathlib import Path
 import pytest
 
 from github_profile_toolkit.validator import (
+    check_readme_quality,
     check_required_sections,
     extract_headings,
+    validate_links,
     validate_readme,
 )
 
@@ -135,3 +137,46 @@ def test_validate_suspicious_link():
     assert result["total"] == 1
     assert result["valid"] == 0
     assert len(result["warnings"]) == 1        
+
+def test_quality_detects_duplicate_headings():
+    content = """
+# About
+
+Some information.
+
+# About
+
+More information.
+"""
+
+    headings = ["About", "About"]
+
+    result = check_readme_quality(content, headings)
+
+    assert "Duplicate heading: about" in result["warnings"]
+    assert result["errors"] == []
+
+
+def test_quality_detects_empty_heading():
+    content = """
+# About
+
+Some information.
+
+#
+
+More information.
+"""
+
+    headings = extract_headings(content)
+
+    result = check_readme_quality(content, headings)
+
+    assert "Empty Markdown heading found." in result["warnings"]
+
+
+def test_quality_detects_empty_readme():
+    result = check_readme_quality("", [])
+
+    assert result["errors"] == ["README is empty."]
+    assert result["warnings"] == []
