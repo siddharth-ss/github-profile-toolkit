@@ -77,3 +77,41 @@ def validate_readme(path: str | Path) -> dict:
         "warnings": warnings,
         "errors": [],
     }
+import re
+from urllib.parse import urlparse
+
+
+def validate_links(content: str) -> dict:
+    """Validate Markdown links found in README content."""
+
+    markdown_links = re.findall(
+        r"\[([^\]]*)\]\(([^)]*)\)",
+        content,
+    )
+
+    valid_links = []
+    warnings = []
+    errors = []
+
+    for text, target in markdown_links:
+        target = target.strip()
+
+        if not target:
+            errors.append(f"Empty link target: [{text}]")
+            continue
+
+        parsed = urlparse(target)
+
+        if parsed.scheme in {"http", "https"} and parsed.netloc:
+            valid_links.append(target)
+        elif target.startswith(("#", "/", "./", "../")):
+            valid_links.append(target)
+        else:
+            warnings.append(f"Suspicious link target: {target}")
+
+    return {
+        "total": len(markdown_links),
+        "valid": len(valid_links),
+        "warnings": warnings,
+        "errors": errors,
+    }
