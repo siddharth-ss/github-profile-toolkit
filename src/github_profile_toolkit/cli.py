@@ -57,6 +57,17 @@ def main() -> None:
 
         print()
 
+        print("ERRORS")
+        print("-" * 24)
+
+        if result["errors"]:
+            for error in result["errors"]:
+                print(f"✗ {error}")
+        else:
+            print("✓ No errors")
+
+        print()
+
         print("SUMMARY")
         print("-" * 24)
         print(f"Passed:   {sum(result['sections'].values())}")

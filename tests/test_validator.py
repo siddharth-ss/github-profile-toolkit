@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 
+from github_profile_toolkit.cli import main
 from github_profile_toolkit.validator import (
     check_readme_quality,
     check_required_sections,
@@ -244,3 +245,27 @@ example@example.com
     warnings = check_section_content(content, headings)
 
     assert warnings == []
+
+def test_cli_reports_errors(tmp_path, monkeypatch, capsys):
+    readme = tmp_path / "README.md"
+
+    readme.write_text(
+        "",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "github-profile-toolkit",
+            "validate",
+            str(readme),
+        ],
+    )
+
+    main()
+
+    output = capsys.readouterr().out
+
+    assert "ERRORS" in output
+    assert "README is empty." in output
