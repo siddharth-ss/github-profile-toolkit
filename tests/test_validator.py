@@ -5,6 +5,7 @@ import pytest
 from github_profile_toolkit.validator import (
     check_readme_quality,
     check_required_sections,
+    check_section_content,
     extract_headings,
     validate_links,
     validate_readme,
@@ -180,3 +181,66 @@ def test_quality_detects_empty_readme():
 
     assert result["errors"] == ["README is empty."]
     assert result["warnings"] == []
+
+def test_check_section_content_detects_empty_section():
+    content = """# My Profile
+
+## About
+
+## Skills
+
+Python
+
+## Projects
+
+My projects.
+
+## Contact
+
+example@example.com
+"""
+
+    headings = [
+        "My Profile",
+        "About",
+        "Skills",
+        "Projects",
+        "Contact",
+    ]
+
+    warnings = check_section_content(content, headings)
+
+    assert "Recommended section is empty: About" in warnings
+
+
+def test_check_section_content_ignores_sections_with_content():
+    content = """# My Profile
+
+## About
+
+I am a developer.
+
+## Skills
+
+Python
+
+## Projects
+
+My projects.
+
+## Contact
+
+example@example.com
+"""
+
+    headings = [
+        "My Profile",
+        "About",
+        "Skills",
+        "Projects",
+        "Contact",
+    ]
+
+    warnings = check_section_content(content, headings)
+
+    assert warnings == []

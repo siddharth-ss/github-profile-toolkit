@@ -59,6 +59,10 @@ def validate_readme(path: str | Path) -> dict:
     warnings = quality["warnings"].copy()
     errors = quality["errors"].copy()
 
+    warnings.extend(
+        check_section_content(content, headings)
+    )
+
     if not headings:
         warnings.append("No Markdown headings were found.")
 
@@ -162,3 +166,52 @@ def check_readme_quality(content: str, headings: list[str]) -> dict:
         "warnings": warnings,
         "errors": errors,
     }
+
+def check_section_content(
+    content: str,
+    headings: list[str],
+) -> list[str]:
+    """Return warnings for recommended sections that have no content."""
+
+    lines = content.splitlines()
+    warnings: list[str] = []
+
+    recommended_sections = {
+        "about": "About",
+        "skills": "Skills",
+        "projects": "Projects",
+        "contact": "Contact",
+    }
+
+    for section_key, section_name in recommended_sections.items():
+        if section_name.lower() not in [heading.lower() for heading in headings]:
+            continue
+
+        start_index = None
+
+        for index, line in enumerate(lines):
+            if line.strip().lstrip("#").strip().lower() == section_name.lower():
+                start_index = index + 1
+                break
+
+        if start_index is None:
+            continue
+
+        section_has_content = False
+
+        for line in lines[start_index:]:
+            stripped = line.strip()
+
+            if stripped.startswith("#"):
+                break
+
+            if stripped:
+                section_has_content = True
+                break
+
+        if not section_has_content:
+            warnings.append(
+                f"Recommended section is empty: {section_name}"
+            )
+
+    return warnings
