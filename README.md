@@ -252,6 +252,8 @@ The first release is:
 
 **v0.1.0**
 
+---
+
 ## Release
 
 The current release is available on GitHub:
